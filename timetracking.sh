@@ -10,13 +10,14 @@
 #    Report generation depends on R-libraries: openxlsx, dplyr. 
 #    The rest is base-R.
 # 
-#    Usage: $ timetracking <i|o|e|w|r|R|h>
+#    Usage: $ timetracking <i|o|l|e|r|d|w>
 #    -i    Create entry in "checkin" field
 #    -o    Create entry in "checkout" field
+#    -l    Print log.csv
 #    -e    Open 'log.csv' for editing
 #    -r    Generate reports/*
-#    -w    Print reports/weekly.csv
 #    -d    Print reports/daily.csv
+#    -w    Print reports/weekly.csv
 #
 # ===================================
 
