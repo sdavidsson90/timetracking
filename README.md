@@ -1,6 +1,6 @@
 ```
 #    Timetracking
-#    Author: Sighvatur Sveinn Davisson (2024)
+#    Author: Sighvatur Sveinn Davidsson (2024)
 #
 #    Description:
 #    Sources a series of actions to create timestamps in a timetracking log.
