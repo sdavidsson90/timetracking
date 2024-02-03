@@ -7,8 +7,7 @@
 #
 #    Description:
 #    Sources a series of actions to create timestamps in a timetracking log.
-#    Report generation depends on R-libraries: openxlsx, dplyr. 
-#    The rest is base-R.
+#    Report generation depends on R-libraries: openxlsx, dplyr. The rest is base-R.
 # 
 #    Usage: $ timetracking <i|o|l|e|r|d|w>
 #    -i    Create entry in "checkin" field
