@@ -1,17 +1,17 @@
-# -- 
+# --
 source('actions/requirements.R')
 
 # --
-daily <- read.csv2("daily.csv")
+log <- read_log()
 
 # --
-daily[nrow(daily), "checkout"] <- format(Sys.time(), "%Y-%m-%d %H:%M")
-
-# -- 
-checkin_sec  <- as.numeric(as.POSIXct(daily[nrow(daily), "checkin"]))
-checkout_sec <- as.numeric(as.POSIXct(daily[nrow(daily), "checkout"]))
-difference <- checkout_sec - checkin_sec
-daily[nrow(daily), "hrs"] <- sec_to_hm(difference)
+log[nrow(log), "checkout"] <- timestamp()
 
 # --
-write.csv2(daily, "daily.csv", row.names = FALSE)
+checkin_sec  <- as.numeric(as.POSIXct(log[nrow(log), "checkin"]))
+checkout_sec <- as.numeric(as.POSIXct(log[nrow(log), "checkout"]))
+difference   <- sec_to_hm(checkout_sec - checkin_sec)
+log[nrow(log), "hrs"] <- difference
+
+# --
+write_log(log)

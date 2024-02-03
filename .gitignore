@@ -1,0 +1,6 @@
+.DS_Store
+log.csv
+reports/daily.csv
+reports/weekly.csv
+reports/year.csv
+reports/year.xlsx
