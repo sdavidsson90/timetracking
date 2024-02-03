@@ -11,7 +11,7 @@
 #    -i    Create entry in "checkin" field
 #    -o    Create entry in "checkout" field
 #    -l    Print log.csv
-#    -e    Open 'log.csv' for editing
+#    -e    Open log.csv for editing
 #    -r    Generate reports/*
 #    -d    Print reports/daily.csv
 #    -w    Print reports/weekly.csv
