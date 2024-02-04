@@ -1,48 +1,33 @@
-# --
-pacman::p_load(dplyr)
-
+# --------------------------------------------------
+library(dplyr)
 source('actions/requirements.R')
 
-if( !is.na(read.csv2('log.csv')[1, 'checkout']) ) {
-  create_report_files()
-}
+if ( !file.exists("reports") ) { dir.create("reports") }
 
-# -- 
-# Transform to prepare for arithmetic operations
-log_arithmetic <- read_log() %>%
-  transmute(
-    checkin  = as.POSIXct(checkin,  format = "%Y-%m-%d %H:%M"),
-    checkout = as.POSIXct(checkout, format = "%Y-%m-%d %H:%M"),
-    week     = as.numeric(format(checkin, "%W")),
-    date     = format(checkin, format = "%Y-%m-%d"),
-    worked_seconds = as.numeric(checkout) - as.numeric(checkin),
-)
-
-# -- 
+# --------------------------------------------------
 # Daily report
-log_arithmetic %>%
-  group_by(date) %>%
+read_log_arithmetic() %>%
+  na.omit() %>%
+  group_by(date, day) %>%
   summarise(
     worked_seconds   = sum(worked_seconds),
-    work_day_seconds = (37 * 60 * 60) / 5,
-    balance_daily    = worked_seconds - work_day_seconds,
+    balance_daily    = worked_seconds - expected_workday_seconds,
     ) %>%
   mutate(
     balance_cumulative = cumsum(balance_daily),
   ) %>%
   transmute(
-    date,
-    day = substr(tolower(weekdays(as.Date(date))), 1, 3),
     work_hours = sec_to_hm(worked_seconds),
-    balance_daily = sec_to_hm_x(balance_daily),
-    balance_cumulative = sec_to_hm_x(balance_cumulative),
-  ) %>%
+    balance_daily = prepend_plus(sec_to_hm(balance_daily)),
+    balance_cumulative = prepend_plus(sec_to_hm(balance_cumulative)),
+  ) %>% 
   write.csv2("reports/daily.csv", row.names = FALSE, quote = FALSE)
 
 
-# --
+# --------------------------------------------------
 # Weekly report
-log_arithmetic %>%
+read_log_arithmetic() %>%
+  na.omit() %>%
   group_by(week) %>%
   summarise(
     worked_seconds = sum(worked_seconds)
@@ -55,12 +40,13 @@ log_arithmetic %>%
   transmute(
     week,
     worked_hours = sec_to_hm(worked_seconds),
-    balance      = sec_to_hm_x(balance),
-    balance_cummulative = sec_to_hm_x(balance_cummulative),
+    balance      = prepend_plus(sec_to_hm(balance)),
+    balance_cummulative = prepend_plus(sec_to_hm(balance_cummulative)),
   ) %>%
   write.csv2("reports/weekly.csv", row.names = FALSE, quote = FALSE)
 
-# --
+
+# --------------------------------------------------
 # Overview of year
 daily <- read.csv2("reports/daily.csv") %>%
   mutate(date = as.Date(date))
@@ -76,5 +62,4 @@ year <- data.frame(
 year <- full_join(year, daily, by = "date") %>%
   mutate( day = substr(tolower(weekdays(as.Date(date))), 1, 3) )
 
-year %>% write.csv2("reports/year.csv", row.names = FALSE, quote = FALSE)
 year %>% openxlsx::write.xlsx(file = "reports/year.xlsx")

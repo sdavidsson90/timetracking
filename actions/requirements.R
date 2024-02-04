@@ -1,31 +1,33 @@
-# --
-Sys.setlocale("LC_TIME","da_DK.UTF-8")
+# --------------------------------------------------
+Sys.setlocale("LC_TIME","en_CA.UTF-8")
 
-log_filepath <- "log.csv"
-
-create_log_file <- function() {
-  if ( !file.exists(log_filepath) ) { writeLines(text = "checkin;checkout;hrs", con = log_filepath) }
-}
-
-
-create_report_files <- function() {
-  message <- "Generate reports with the '-r' flag"
-  if ( !file.exists("reports") ) { dir.create("reports") }
-  if ( !file.exists("reports/daily.csv") ) { writeLines(message, "reports/daily.csv") }
-  if ( !file.exists("reports/weekly.csv") ) { writeLines(message, "reports/weekly.csv") }
-  if ( !file.exists("reports/year.csv") ) { writeLines(message, "reports/year.csv") }
-}
-
-
+# --------------------------------------------------
 timestamp <- function() { format(Sys.time(), "%Y-%m-%d %H:%M") }
 
-read_log <- function() { read.csv2(log_filepath) }
+# --------------------------------------------------
+read_log <- function() { read.csv2("log.csv") }
 
-write_log <- function(log) { write.csv2(x = log, file = log_filepath, row.names = FALSE, quote = FALSE) }
+read_log_arithmetic <- function() {
+  read_log() %>%
+    transmute(
+      checkin  = as.POSIXct(checkin,  format = "%Y-%m-%d %H:%M"),
+      checkout = as.POSIXct(checkout,  format = "%Y-%m-%d %H:%M"),
+      date     = format(checkin, format = "%Y-%m-%d"),
+      day      = substr(tolower(weekdays(as.Date(date))), 1, 3),  # move this down
+      week     = as.numeric(format(checkin, "%W")),
+      worked_seconds = as.numeric(checkout) - as.numeric(checkin),
+      expected_workday_seconds = ifelse(day == "sat" | day == "sun", 0, ((37 * 60 * 60) / 5)),
+    )
+}
 
+write_log <- function(log) { write.csv2(x = log, file = "log.csv", row.names = FALSE, quote = FALSE) }
 
+# --------------------------------------------------
+date_to_sec <- function(date) { as.numeric(as.POSIXct(date,  format = "%Y-%m-%d %H:%M")) }
+
+date_to_sec <- function(date) { as.numeric(as.POSIXct(date,  format = "%Y-%m-%d %H:%M")) }
 sec_to_hm <- function(wrk_sec) {
-  sign = ifelse(wrk_sec < 0, "-", "")
+  sign    = ifelse(wrk_sec < 0, "-", "")
   wrk_sec = ifelse(wrk_sec < 0, wrk_sec * -1, wrk_sec)
   hours   = as.integer(wrk_sec / 60 / 60)
   minutes = round((wrk_sec - hours * 60 * 60 ) / 60)
@@ -34,13 +36,4 @@ sec_to_hm <- function(wrk_sec) {
   paste0(sign, hours, ":", minutes)
 }
 
-# Same as previous but nicer for parsing balances
-sec_to_hm_x <- function(wrk_sec) {
-  sign = ifelse(wrk_sec < 0, "-", "+")
-  wrk_sec = ifelse(wrk_sec < 0, wrk_sec * -1, wrk_sec)
-  hours   = as.integer(wrk_sec / 60 / 60)
-  minutes = round((wrk_sec - hours * 60 * 60 ) / 60)
-  hours   = formatC(hours,   width = 2, flag = 0)
-  minutes = formatC(minutes, width = 2, flag = 0)
-  paste0(sign, hours, ":", minutes)
-}
+prepend_plus <- function(x) { ifelse(substring(x, 1, 1) == "-", paste0("", x), paste0("+", x)) }
