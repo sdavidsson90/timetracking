@@ -23,24 +23,20 @@
 
 cd $(dirname $0)
 
+BOLD=$(tput bold)
+NORM=$(tput sgr0)
+
 if [ ! -f "log.csv" ] && [[ ! "${*}" = -i ]]; then
   echo "Log file does not exist! Try checking in with '-i'"
   exit 1
 fi
 
 print_log() {
-  echo -en "\033[1mCheckin          Checkout         Hours\033[0m\n"
-  tail -n +2 log.csv | tail -n 10
+  echo "${BOLD}Checkin           Checkout          Hours${NORM}"
+  awk -F ';' 'NR>2 {print $1, "", $2, "", $3}' < log.csv | tail -n 10
 }
 
-print_report() {
-  head -n 1 reports/$1.csv 2>/dev/null && \
-  tail -n +2 reports/$1.csv | tail -n 10 || \
-  echo -e "${1^} report does not exist! Try checking out with '-o'"
-  exit 1
-}
-
-while getopts iofeldw OPTIONS; do
+while getopts :iofeldw OPTIONS; do
   case ${OPTIONS} in
     i)
       bash actions/checkin.sh
@@ -48,25 +44,31 @@ while getopts iofeldw OPTIONS; do
       ;;
     o)
       Rscript actions/checkout.R
-      Rscript actions/report.R > /dev/null 2>&1 & disown
+      Rscript actions/reports.R > /dev/null 2>&1 & disown
       print_log
       ;;
     f)
-      Rscript actions/fix.R
-      Rscript actions/report.R > /dev/null 2>&1 & disown
+      Rscript actions/fix.R > /dev/null 2>&1
+      Rscript actions/reports.R  > /dev/null 2>&1 & disown
       print_log
       ;;
     e)
-      nvim log.csv || vim log.csv
+      nvim log.csv || vim log.csv 
+      wait `pgrep vim` > /dev/null 2>&1
+      Rscript actions/fix.R
+      Rscript actions/reports.R  > /dev/null 2>&1 & disown
+      print_log
       ;;
     l)
       print_log
       ;;
     d)
-      print_report daily
+      echo "${BOLD}Date   Day  Worked  Balance  Cumulative${NORM}"
+      awk -F ';' 'NR>1 { print substr($1, 6), "", $2, "", $3, "  ", $4, "    ", $5 }' < reports/daily.csv | tail -n 10
       ;;
     w)
-      print_report weekly
+      echo "${BOLD}W  Hours  Balance  Cumulative${NORM}"
+      awk -F ';' 'NR>1 { print $1,"", $2, " ", $3, "    ", $4 }' < reports/weekly.csv | tail -n 10
       ;;
     ?)
       echo -e "\nInvalid option!"
