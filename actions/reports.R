@@ -1,5 +1,4 @@
 # --------------------------------------------------
-#setwd('..')
 library(dplyr)
 source('actions/requirements.R')
 if ( !file.exists("reports") ) { dir.create("reports") }
@@ -48,13 +47,13 @@ read_log_arithmetic() %>%
   write.csv2("reports/weekly.csv", row.names = FALSE, quote = FALSE)
 
 # --------------------------------------------------
-# -- Year
+# -- Yearly
 daily <- read.csv2("reports/daily.csv") %>% mutate(date = as.Date(date))
 
 start_of_year <- as.Date(paste0(format(Sys.time(), "%Y"), "-01-01"))
 end_of_year   <- as.Date(paste0(format(Sys.time(), "%Y"), "-12-31"))
 
-year <- data.frame( date = seq(start_of_year, end_of_year, by = "day") ) %>%
+data.frame(date = seq(start_of_year, end_of_year, by = "day")) %>%
   full_join(daily, by = "date") %>%
-  mutate( day = substr(tolower(weekdays(as.Date(date))), 1, 3) ) %>%
-  openxlsx::write.xlsx(file = "reports/year.xlsx")
+  mutate(day = substr(tolower(weekdays(as.Date(date))), 1, 3)) %>%
+  openxlsx::write.xlsx(file = "reports/yearly.xlsx")

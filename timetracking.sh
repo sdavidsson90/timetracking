@@ -71,7 +71,7 @@ while getopts :iofeldw OPTIONS; do
       awk -F ';' 'NR>1 { print $1,"", $2, " ", $3, "    ", $4 }' < reports/weekly.csv | tail -n 10
       ;;
     ?)
-      echo -e "\nInvalid option!"
+      echo "Invalid option!"
       exit 1
       ;;
   esac
