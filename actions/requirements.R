@@ -35,4 +35,4 @@ sec_to_hm <- function(sec) {
     paste0(sign, hours, ":", minutes)
 }
 
-prepend_plus <- function(x) { ifelse( nchar(x) == 5, paste0("+", x), paste0("", x)) } ; prepend_plus("-44:44"); prepend_plus("44:44")
+prepend_plus <- function(x) { ifelse( nchar(x) == 5, paste0("+", x), paste0("", x)) }
